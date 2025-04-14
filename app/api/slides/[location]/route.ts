@@ -3,56 +3,42 @@ import { supabase } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest, context: { params: { location: string } }) {
-  try {
-    const location = context.params.location;
+type LocationParams = Promise<{ location: string }>;
 
-    const body = await req.json();
 
-    const { imageUrl, expiresAt, isHidden } = body;
+export async function POST(
+  req: NextRequest,
+  { params }: { params: LocationParams }
+) {
+  const { location } = await params;
+  const { imageUrl, expiresAt, isHidden } = await req.json();
 
-    if (!imageUrl || !expiresAt || !location) {
-      console.error('❌ Missing required fields');
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+  if (!imageUrl || !expiresAt) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
 
-    const parsedDate = new Date(expiresAt);
-    if (isNaN(parsedDate.getTime())) {
-      console.error('❌ Invalid expiresAt:', expiresAt);
-      return NextResponse.json({ error: 'Invalid date' }, { status: 400 });
-    }
+  const { error } = await supabase.from('slides').insert([
+    {
+      imageUrl,
+      expiresAt: new Date(expiresAt),
+      isHidden: isHidden ?? false,
+      location,
+    },
+  ]);
 
-    const { data, error } = await supabase.from('slides').insert([
-      {
-        imageUrl,
-        expiresAt: parsedDate,
-        isHidden: isHidden ?? false,
-        location,
-      },
-    ]);
-
-    if (error) {
-      console.error('❌ Supabase insert error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    console.log('✅ Slide inserted:', data?.[0]);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true }, { status: 201 });
-
-  } catch (err: any) {
-    console.error('❌ Unexpected error:', err);
-    return NextResponse.json({ error: err.message || 'Unknown error' }, { status: 500 });
-  }
 }
 
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ location: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: LocationParams }
+) {
   const { location } = await params;
-
-  if (location !== 'ru' && location !== 'cy') {
-    return NextResponse.json({ error: 'Invalid location' }, { status: 400 });
-  }
 
   const { data, error } = await supabase
     .from('slides')
