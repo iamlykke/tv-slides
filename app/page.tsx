@@ -8,7 +8,7 @@ export default function Home() {
         <Link href="/cy">CY</Link>
         <Link href="/ru">RU</Link>
       </div>
-      <Link href="/admin">ADMIN</Link>
+      <Link href="/admin">ADMIN SECTION</Link>
     </div>
   );
 }
