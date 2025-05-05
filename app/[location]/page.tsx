@@ -13,15 +13,15 @@ export default function Location({
   const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSlides = async () => {
-      setLoading(true);
-      const res = await fetch(`/api/slides/${location}`);
-      const data = await res.json();
-      setSlides(data);
-      setLoading(false);
-    };
+  const fetchSlides = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/slides/${location}`);
+    const data = await res.json();
+    setSlides(data);
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchSlides();
   }, []);
   return <SlideShow slides={slides} loading={loading} />;
