@@ -1,4 +1,3 @@
-// app/admin/layout.tsx
 import Link from "next/link";
 
 export default function AdminLayout({
